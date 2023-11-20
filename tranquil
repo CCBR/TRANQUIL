@@ -58,8 +58,8 @@ SCRIPTSDIR="$PIPELINE_HOME/workflow/scripts"
 echo -ne "Pipeline Dir: \t\t $PIPELINE_HOME\n"
 SNAKEFILE="${PIPELINE_HOME}/workflow/Snakefile"
 echo -ne "Snakefile: \t\t $SNAKEFILE\n"
-GIT_COMMIT_TAG=$(get_git_commitid_tag $PIPELINE_HOME)
-echo -ne "Git Commit/Tag: \t $GIT_COMMIT_TAG\n"
+VERSION=$(cat ${PIPELINE_HOME}/VERSION)
+echo -ne "Version: \t\t $VERSION\n"
 echo -ne "Host: \t\t\t $HOST\n"
 
 function usage_only() {
