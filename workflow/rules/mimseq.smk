@@ -18,7 +18,8 @@ rule mimseq:
         mimseq_flags = config['mimseq_flags'],
         contrast = "{contrast}",
         sampleinfo = join(RESULTSDIR,"{contrast}","sampleinfo.txt"),
-        outdir = join(RESULTSDIR,"{contrast}","mimseq")
+        outdir = join(RESULTSDIR,"{contrast}","mimseq"),
+        ccacounts = join(RESULTSDIR,"{contrast}","mimseq","CCAanalysis","CCAcounts.csv")
     shell:"""
 set -e -x -o pipefail
 # set tmpdir
@@ -52,6 +53,7 @@ mimseq  \\
 {params.mimseq_flags} \\
 {params.sampleinfo}
 
+cp {params.ccacounts} {output.ccacounts}
 # cleanup tmpdir
 if [ "$cleanup" == "1" ];then
     rm -rf $tmpdir
