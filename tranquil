@@ -12,6 +12,51 @@ module purge
 #
 # DISCLAIMER: This wrapper only works on BIOWULF
 
+function usage_only() {
+
+# This script prints only the usage without any pre-amble
+
+cat << EOF
+#################################################################
+#################################################################
+USAGE:
+  bash ${SCRIPTNAME} -m/--runmode=<RUNMODE> -w/--workdir=<WORKDIR>
+Required Arguments:
+1.  RUNMODE: [Type: String] Valid options:
+    *) init : initialize workdir
+    *) run : run with slurm
+    *) reset : DELETE workdir dir and re-init it
+    *) dryrun : dry run snakemake to generate DAG
+    *) unlock : unlock workdir if locked by snakemake
+    *) runlocal : run without submitting to sbatch
+2.  WORKDIR: [Type: String]: Absolute or relative path to the 
+             output folder with write permissions.
+#################################################################
+#################################################################
+EOF
+
+}
+
+function err() { 
+
+# This is a generic error message function. It prints the message, then the 
+# usage and exits with non-zero exit code.
+# @Input:
+#     @param1: Message to print before printing the usage and exiting
+# @Ouput:
+#     @param2: echo the error message with the usage to the screen
+
+cat << EOF
+#################################################################
+##### ERROR ############ ERROR ########## ERROR #################
+#################################################################
+  $@
+EOF
+
+usage_only && exit 1 1>&2; 
+
+}
+
 # setting python and snakemake versions 
 # only for BIOWULF
 PYTHON_VERSION="python/3.7"
@@ -62,31 +107,6 @@ VERSION=$(cat ${PIPELINE_HOME}/VERSION)
 echo -ne "Version: \t\t $VERSION\n"
 echo -ne "Host: \t\t\t $HOST\n"
 
-function usage_only() {
-
-# This script prints only the usage without any pre-amble
-
-cat << EOF
-#################################################################
-#################################################################
-USAGE:
-  bash ${SCRIPTNAME} -m/--runmode=<RUNMODE> -w/--workdir=<WORKDIR>
-Required Arguments:
-1.  RUNMODE: [Type: String] Valid options:
-    *) init : initialize workdir
-    *) run : run with slurm
-    *) reset : DELETE workdir dir and re-init it
-    *) dryrun : dry run snakemake to generate DAG
-    *) unlock : unlock workdir if locked by snakemake
-    *) runlocal : run without submitting to sbatch
-2.  WORKDIR: [Type: String]: Absolute or relative path to the 
-             output folder with write permissions.
-#################################################################
-#################################################################
-EOF
-
-}
-
 function usage() { 
 
 # This function prints generic usage of the wrapper script.
@@ -101,26 +121,6 @@ TRANQUIL (TRna AbundaNce QUantification pIpeLine)
 EOF
 
 usage_only
-
-}
-
-function err() { 
-
-# This is a generic error message function. It prints the message, then the 
-# usage and exits with non-zero exit code.
-# @Input:
-#     @param1: Message to print before printing the usage and exiting
-# @Ouput:
-#     @param2: echo the error message with the usage to the screen
-
-cat << EOF
-#################################################################
-##### ERROR ############ ERROR ########## ERROR #################
-#################################################################
-  $@
-EOF
-
-usage_only && exit 1 1>&2; 
 
 }
 
