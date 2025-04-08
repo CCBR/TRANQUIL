@@ -1,4 +1,4 @@
-name: Add to personal projects
+name: Add issues/PRs to user projects
 
 on:
   issues:
@@ -7,6 +7,10 @@ on:
   pull_request:
     types:
       - assigned
+
+permissions:
+  issues: read
+  pull-requests: read
 
 jobs:
   add-to-project:
