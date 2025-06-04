@@ -1,6 +1,21 @@
+rule fastq_validator:
+    input:
+        fq = join(WORKDIR,"fastqs","{replicate}.R1.fastq.gz")
+    output:
+        log = join(RESULTSDIR,"fastqs","{replicate}.R1.fastq_validator.log")
+    container:
+        TOOLS['fastqvalidator']['docker']
+    params:
+        minreadlen=2
+    shell:
+        """
+        fastQValidator --noeof --minReadLen {params.minreadlen} --file {input.fq} > {output.log}
+        """
+
 rule trim:
     input:
-        infq = join(WORKDIR,"fastqs","{replicate}.R1.fastq.gz")
+        infq = join(WORKDIR,"fastqs","{replicate}.R1.fastq.gz"),
+        fastqv = rules.fastq_validator.output.log
     output:
         outfq = join(RESULTSDIR,"fastqs","{replicate}.trim.R1.fastq.gz"),
         stats = temp(join(RESULTSDIR,"fastqs","{replicate}.readstats"))

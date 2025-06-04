@@ -5,6 +5,8 @@ cutadapt:
   docker: "docker://nciccbr/ncigb_cutadapt_v1.18:latest"
 fastqc:
   version: "fastqc/0.11.9"
+fastqvalidator:
+  docker: "docker://nciccbr/ccbr_fastqvalidator:v0.1.0"
 hisat:
   version: "hisat/2.2.1.0"
 mimseq:
