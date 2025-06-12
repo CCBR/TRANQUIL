@@ -43,10 +43,6 @@ def get_file_size(filename):
 #########################################################
 CONFIGFILE = str(workflow.overwrite_configfiles[0])
 
-# set memory limit
-# used for sambamba sort, etc
-# MEMORYG="100G"
-
 # read in various dirs from config file
 WORKDIR=config['workdir']
 RESULTSDIR=join(WORKDIR,"results")
@@ -132,13 +128,6 @@ SAMPLE2REPLICATES=dict()
 for g in SAMPLES:
     SAMPLE2REPLICATES[g]=list(REPLICATESDF[REPLICATESDF['sampleName']==g].index)
 
-# print(REPLICATESDF.columns)
-# print(REPLICATESDF.sampleName)
-# print(SAMPLES[0])
-# print(REPLICATESDF[REPLICATESDF['sampleName']==SAMPLES[0]].index)
-# print(SAMPLE2REPLICATES)
-# exit()
-
 # read in contrasts
 CONTRASTSDF = pd.read_csv(config["contrasts"],sep="\t",header=0)
 CONTRASTSDF["contrast"] = CONTRASTSDF.apply(lambda row: row["group1"] + "_vs_" + row["group2"], axis=1)
@@ -172,10 +161,6 @@ for index, row in CONTRASTSDF.iterrows():
             out.write("%s\t%s\n"%(trimoutputfile,s))
     out.close()
 
-
-# print(SAMPLES)
-# print(SAMPLES_IN_CONTRASTS)
-# exit()
 
 #########################################################
 # READ IN TOOLS REQUIRED BY PIPELINE
@@ -224,25 +209,3 @@ print("# Results dir :",RESULTSDIR)
 print("# Scripts dir :",SCRIPTSDIR)
 print("# Resources dir :",RESOURCESDIR)
 print("# Cluster JSON :",CLUSTERJSON)
-
-# GENOME=config["genome"]
-# INDEXDIR=config[GENOME]["indexdir"]
-# print("# Bowtie index dir:",INDEXDIR)
-
-# GENOMEFILE=join(INDEXDIR,GENOME+".genome") # genome file is required by macs2 peak calling
-# check_readaccess(GENOMEFILE)
-# print("# Genome :",GENOME)
-# print("# .genome :",GENOMEFILE)
-
-# GENOMEFA=join(INDEXDIR,GENOME+".fa") # genome file is required by motif enrichment rule
-# check_readaccess(GENOMEFA)
-# print("# Genome fasta:",GENOMEFA)
-
-QCDIR=join(RESULTSDIR,"QC")
-
-# FASTQ_SCREEN_CONFIG=config["fastqscreen_config"]
-# check_readaccess(FASTQ_SCREEN_CONFIG)
-# print("# FQscreen config  :",FASTQ_SCREEN_CONFIG)
-
-
-#########################################################
