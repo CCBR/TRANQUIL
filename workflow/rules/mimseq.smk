@@ -3,7 +3,7 @@ rule mimseq:
     input:
         infq = expand(join(RESULTSDIR,"fastqs","{replicate}.trim.R1.fastq.gz"),replicate=REPLICATES)
     output:
-        ccacounts = join(RESOURCESDIR,"{contrast}","mimseq","CCAanalysis","CCAcounts.csv")
+        ccacounts = join(RESULTSDIR,"{contrast}","mimseq","CCAanalysis","CCAcounts.csv")
     container: TOOLS["mimseq"]["docker"]
     threads: getthreads("mimseq")
     params:

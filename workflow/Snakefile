@@ -9,7 +9,7 @@ rule all:
         # readstats table
         join(RESULTSDIR,"fastqs","readstats.txt"),
         # cca counts as output from mimseq
-        expand(join(RESOURCESDIR,"{contrast}","mimseq","CCAanalysis","CCAcounts.csv"),contrast=CONTRASTS),
+        expand(join(RESULTSDIR,"{contrast}","mimseq","CCAanalysis","CCAcounts.csv"),contrast=CONTRASTS),
 
 include: join("rules","preprocess.smk")
 include: join("rules","mimseq.smk")
