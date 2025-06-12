@@ -37,6 +37,7 @@ rule mimseq:
             tmpdir=$(mktemp -d -p /dev/shm)
             cleanup=1
         fi
+        staging_dir=$tmpdir/mimseq_staging
 
         g2=$(echo {params.contrast} | awk -F"_vs_" '{{print $2}}')
         mimseq  \\
@@ -47,12 +48,15 @@ rule mimseq:
         --max-mismatches {params.mimseqmaxmismatches}  \\
         --control-condition $g2  \\
         -n {params.contrast}  \\
-        --out-dir {params.outdir} \\
+        --out-dir $staging_dir \\
         --max-multi {params.mimseqmaxmulti} \\
         --remap  --remap-mismatches {params.mimseqremapmismatches} \\
         {params.mimseq_flags} \\
         {params.sampleinfo}
 
+        # mimseq fails when outdir already exists, but snakemake creates it automatically at the start of the rule.
+        # so we first use a staging directory, then move the results to the final outdir.
+        mv $staging_dir/* {params.outdir}
         # cleanup tmpdir
         if [ "$cleanup" == "1" ];then
             rm -rf $tmpdir
