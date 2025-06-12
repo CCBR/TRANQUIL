@@ -54,7 +54,9 @@ In order to run the pipeline, there are 3 steps:
 1. **<u>Initialize</u>**: Use the `init` mode to setup the output folder:
 
 ```bash
-/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil -w=/scratch/cluster_scratch/$USER/TRANQUIL_test -m=init
+/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil \
+  -w=/scratch/cluster_scratch/$USER/TRANQUIL_test \
+  -m=init
 ```
 ```
 #################################################################
@@ -99,13 +101,17 @@ The group1 w.r.t. group2 contrast is run.
 3. **<u>Dry-run (and Run) </u>**: The following command will run the dry-run and generate a `dryrun.log` in the output folder
 
 ```bash
-/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil -w=/scratch/cluster_scratch/$USER/TRANQUIL_test -m=dry
+/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil \
+  -w=/scratch/cluster_scratch/$USER/TRANQUIL_test \
+  -m=dryrun
 ```
 
 Once everything looks ok, the job can be run on the cluster by switching the **mode** from `dry` to `run`, like so:
 
 ```bash
-/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil -w=/scratch/cluster_scratch/$USER/TRANQUIL_test -m=run
+/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil \
+  -w=/scratch/cluster_scratch/$USER/TRANQUIL_test \
+  -m=run
 ```
 
 ## Outputs:
