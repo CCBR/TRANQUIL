@@ -12,7 +12,7 @@ module purge
 #
 # DISCLAIMER: This wrapper only works on BIOWULF
 
-# setting python and snakemake versions 
+# setting python and snakemake versions
 # only for BIOWULF
 PYTHON_VERSION="python/3.7"
 SNAKEMAKE_VERSION="snakemake/5.24.1"
@@ -79,7 +79,7 @@ Required Arguments:
     *) dryrun : dry run snakemake to generate DAG
     *) unlock : unlock workdir if locked by snakemake
     *) runlocal : run without submitting to sbatch
-2.  WORKDIR: [Type: String]: Absolute or relative path to the 
+2.  WORKDIR: [Type: String]: Absolute or relative path to the
              output folder with write permissions.
 #################################################################
 #################################################################
@@ -87,7 +87,7 @@ EOF
 
 }
 
-function usage() { 
+function usage() {
 
 # This function prints generic usage of the wrapper script.
 # @Input: None
@@ -104,9 +104,9 @@ usage_only
 
 }
 
-function err() { 
+function err() {
 
-# This is a generic error message function. It prints the message, then the 
+# This is a generic error message function. It prints the message, then the
 # usage and exits with non-zero exit code.
 # @Input:
 #     @param1: Message to print before printing the usage and exiting
@@ -120,7 +120,7 @@ cat << EOF
   $@
 EOF
 
-usage_only && exit 1 1>&2; 
+usage_only && exit 1 1>&2;
 
 }
 
@@ -171,11 +171,11 @@ _set_test_samplemanifest
 cp ${PIPELINE_HOME}/config/contrasts.tsv $WORKDIR/contrasts.tsv
 
 #create log and stats folders
-if [ ! -d $WORKDIR/logs ]; then 
+if [ ! -d $WORKDIR/logs ]; then
   mkdir -p $WORKDIR/logs
   echo -ne "Logs Dir: \t\t $WORKDIR/logs\n"
 fi
-if [ ! -d $WORKDIR/stats ];then 
+if [ ! -d $WORKDIR/stats ];then
   mkdir -p $WORKDIR/stats
   echo -ne "Stats Dir: \t\t $WORKDIR/stats\n"
 fi
@@ -183,8 +183,8 @@ fi
 cat << EOF
 #################################################################
 #################################################################
-Done Initializing $WORKDIR. 
-You can now edit 
+Done Initializing $WORKDIR.
+You can now edit
 $WORKDIR/config.yaml
 $WORKDIR/samples.tsv
 and
@@ -202,7 +202,7 @@ function check_essential_files() {
 
   if [ ! -d $WORKDIR ];then err "Folder $WORKDIR does not exist!"; fi
   for f in config.yaml samples.tsv contrasts.tsv ; do
-    if [ ! -f $WORKDIR/$f ]; then 
+    if [ ! -f $WORKDIR/$f ]; then
       err "Error: '${f}' file not found in workdir ... initialize first!"
     fi
   done
@@ -212,7 +212,7 @@ function check_essential_files() {
 function reconfig(){
 
 # Rebuild config file and replace the config.yaml in the WORKDIR
-# this is only for dev purposes when new key-value pairs are being 
+# this is only for dev purposes when new key-value pairs are being
 # updated in the config file in PIPELINE_HOME
 
   check_essential_files
@@ -254,7 +254,7 @@ function dryrun() {
 
 function unlock() {
 
-# check essential files, load modules and 
+# check essential files, load modules and
 # unlock the workdir if previous snakemake run ended abruptly
 
   runcheck
@@ -295,7 +295,7 @@ function set_singularity_binds(){
   grep -v gpfs ${WORKDIR}/tmp1|awk -F'/' -v OFS='/' '{print $1,$2,$3}' | \
     grep "[a-zA-Z0-9]" | \
     sort | uniq > ${WORKDIR}/tmp3
-  while read a;do 
+  while read a;do
     readlink -f $a
   done < ${WORKDIR}/tmp3 | grep "[a-zA-Z0-9]"> ${WORKDIR}/tmp4
   binds=$(cat ${WORKDIR}/tmp2 ${WORKDIR}/tmp3 ${WORKDIR}/tmp4 | sort | uniq | tr '\n' ',')
@@ -309,7 +309,7 @@ function printbinds(){
 
 # set the singularity binds and print them
 # singularity binds are /lscratch,/data/CCBR_Pipeliner,
-# plus paths deduced from config.yaml and samples.tsv using 
+# plus paths deduced from config.yaml and samples.tsv using
 # set_singularity binds function
 
   set_singularity_binds
@@ -319,7 +319,7 @@ function printbinds(){
 
 function runlocal() {
 
-# If the pipeline is fired up on an interactive node (with sinteractive), 
+# If the pipeline is fired up on an interactive node (with sinteractive),
 # this function runs the pipeline
 
   runcheck
@@ -387,17 +387,17 @@ function preruncleanup() {
   echo "Running..."
 
   # check initialization
-  check_essential_files 
+  check_essential_files
 
   cd $WORKDIR
   ## Archive previous run files
-  if [ -f ${WORKDIR}/snakemake.log ];then 
+  if [ -f ${WORKDIR}/snakemake.log ];then
     modtime=$(_get_file_modtime ${WORKDIR}/snakemake.log)
     mv ${WORKDIR}/snakemake.log ${WORKDIR}/stats/snakemake.${modtime}.log
-    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then 
+    if [ -f ${WORKDIR}/snakemake.log.HPC_summary.txt ];then
       mv ${WORKDIR}/snakemake.log.HPC_summary.txt ${WORKDIR}/stats/snakemake.${modtime}.log.HPC_summary.txt
     fi
-    if [ -f ${WORKDIR}/snakemake.stats ];then 
+    if [ -f ${WORKDIR}/snakemake.stats ];then
       mv ${WORKDIR}/snakemake.stats ${WORKDIR}/stats/snakemake.${modtime}.stats
     fi
   fi
@@ -439,13 +439,13 @@ function run() {
     snakemake -s $SNAKEFILE \
     --report ${WORKDIR}/runlocal_snakemake_report.html \
     --directory $WORKDIR \
-    --configfile ${WORKDIR}/config.yaml 
+    --configfile ${WORKDIR}/config.yaml
   fi
 
   elif [ "$1" == "slurm" ];then
-  
+
   preruncleanup
-# if QOS is other than "global" and is supplied in the cluster.json file then add " --qos={cluster.qos}" to the 
+# if QOS is other than "global" and is supplied in the cluster.json file then add " --qos={cluster.qos}" to the
 # snakemake command below
 cat > ${WORKDIR}/submit_script.sbatch << EOF
 #!/bin/bash
@@ -514,7 +514,7 @@ if [ "\$?" -eq "0" ];then
   snakemake -s $SNAKEFILE \\
   --directory $WORKDIR \\
   --report ${WORKDIR}/runslurm_snakemake_report.html \\
-  --configfile ${WORKDIR}/config.yaml 
+  --configfile ${WORKDIR}/config.yaml
 fi
 
 bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
@@ -542,7 +542,7 @@ snakemake $1 -s $SNAKEFILE \
 --rerun-incomplete \
 --keep-going \
 --stats ${WORKDIR}/snakemake.stats > ${WORKDIR}/dryrun.log 2>&1
-cat ${WORKDIR}/dryrun.log 
+cat ${WORKDIR}/dryrun.log
 
   else # for unlock
 

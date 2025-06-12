@@ -15,7 +15,6 @@ and pushed to [dockerhub](https://hub.docker.com/repository/docker/nciccbr/tranq
 
 Pipeline code has been checked out at `/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL` and is available for all users of FRCE.
 
-
 ```bash
 /mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/tranquil
 ```
@@ -58,6 +57,7 @@ In order to run the pipeline, there are 3 steps:
   -w=/scratch/cluster_scratch/$USER/TRANQUIL_test \
   -m=init
 ```
+
 ```
 #################################################################
 #################################################################

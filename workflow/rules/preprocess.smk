@@ -21,10 +21,10 @@ rule trim:
         stats = temp(join(RESULTSDIR,"fastqs","{replicate}.readstats"))
     envmodules:
         TOOLS["cutadapt"]["version"]
-    container: 
-        TOOLS["cutadapt"]["docker"]    
+    container:
+        TOOLS["cutadapt"]["docker"]
     threads: getthreads("trim")
-    params: 
+    params:
         memg = getmemg("trim"),
         memG = getmemG("trim"),
         workdir = WORKDIR,
@@ -38,7 +38,7 @@ rule trim:
     shell:"""
 set -e -x -o pipefail
 # set tmpdir
-if [ -w "/lscratch/${{SLURM_JOB_ID}}" ];then 
+if [ -w "/lscratch/${{SLURM_JOB_ID}}" ];then
     # if running on BIOWULF
     tmpdir="/lscratch/${{SLURM_JOB_ID}}"
     cleanup=0
@@ -103,8 +103,8 @@ rule concat_stats:
     output:
         statstable=join(RESULTSDIR,"fastqs","readstats.txt")
     shell:"""
-echo -ne "ReplicateName\\tInput_Nreads\\tInput_RL\\tAfter_removing_seq_adapter_Nreads\\tAfter_removing_seq_adapter_RL\\tAfter_trimming_linker_Nreads\\tAfter_trimming_linker_RL\\tAfter_5prime_trimming_Nreads\\tAfter_5prime_trimming_RL\\tAfter_polyG_trimming_Nreads\\tAfter_polyG_trimming_RL\\n" > {output.statstable}    
-cat {input.stats} | sed "s/ /\\t/g" >> {output.statstable}    
+echo -ne "ReplicateName\\tInput_Nreads\\tInput_RL\\tAfter_removing_seq_adapter_Nreads\\tAfter_removing_seq_adapter_RL\\tAfter_trimming_linker_Nreads\\tAfter_trimming_linker_RL\\tAfter_5prime_trimming_Nreads\\tAfter_5prime_trimming_RL\\tAfter_polyG_trimming_Nreads\\tAfter_polyG_trimming_RL\\n" > {output.statstable}
+cat {input.stats} | sed "s/ /\\t/g" >> {output.statstable}
 """
 
 # rule create_sampleinfo:

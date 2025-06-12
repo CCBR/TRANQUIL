@@ -1,17 +1,17 @@
 {
-	"__default__": {
-		"mem": "48g",
-		"partition": "norm",
-		"threads": "2",
-		"time": "2-00:00:00",
-        "name"      : "{rule}.{wildcards}",
-        "output"    : "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.out",
-        "error"     : "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.err"
-	},
-	"trim": {
-		"threads": "16"
-	},
-	"mimseq": {
-		"threads": "16"
-	}
+    "__default__": {
+        "mem": "48g",
+        "partition": "norm",
+        "threads": "2",
+        "time": "2-00:00:00",
+        "name": "{rule}.{wildcards}",
+        "output": "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.out",
+        "error": "logs/${{SLURM_JOBID}}.%j.{rule}.{wildcards}.err"
+    },
+    "trim": {
+        "threads": "16"
+    },
+    "mimseq": {
+        "threads": "16"
+    }
 }

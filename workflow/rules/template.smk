@@ -6,15 +6,15 @@
 #         outfq = join(RESULTSDIR,"fastqs","{replicate}.trim.fastq.gz")
 #     envmodules:
 #         TOOLS["cutadapt"]["version"]
-#     container: config["cutadapt"]["docker"]    
+#     container: config["cutadapt"]["docker"]
 #     threads: getthreads("trim")
-#     params: 
+#     params:
 #         memg = getmemg("trim"),
 #         memG = getmemG("trim")
 #     shell:"""
 # set -e -x -o pipefail
 # # set tmpdir
-# if [ -w "/lscratch/${{SLURM_JOB_ID}}" ];then 
+# if [ -w "/lscratch/${{SLURM_JOB_ID}}" ];then
 #     # if running on BIOWULF
 #     tmpdir="/lscratch/${{SLURM_JOB_ID}}"
 #     cleanup=0
