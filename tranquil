@@ -13,7 +13,7 @@ module purge
 # DISCLAIMER: This wrapper only works on BIOWULF
 
 # setting python and snakemake versions
-# only for BIOWULF
+# python is only loaded on BIOWULF; snakemake is loaded on BIOWULF and FRCE
 PYTHON_VERSION="python/3.7"
 SNAKEMAKE_VERSION="snakemake/5.24.1"
 
@@ -110,7 +110,7 @@ function err() {
 # usage and exits with non-zero exit code.
 # @Input:
 #     @param1: Message to print before printing the usage and exiting
-# @Ouput:
+# @Output:
 #     @param2: echo the error message with the usage to the screen
 
 cat << EOF
@@ -229,17 +229,18 @@ function runcheck(){
 
 if [ "$HOST" == "BIOWULF" ]; then
 
-  module load $PYTHON_VERSION
-  module load $SNAKEMAKE_VERSION
-  module load singularity
+  module load "$PYTHON_VERSION" || err "Failed to load $PYTHON_VERSION"
+  module load "$SNAKEMAKE_VERSION" || err "Failed to load $SNAKEMAKE_VERSION"
+  module load singularity || err "Failed to load singularity"
 
 elif [ "$HOST" == "FRCE" ];then
 
-  module load singularity/3.7.2 > /dev/null
-  # Add my own version of python and snakemake to the PATH
-  export PATH=/mnt/projects/CCBR-Pipelines/bin/:${PATH}
+  module load singularity/3.7.2 > /dev/null || err "Failed to load singularity/3.7.2"
+  module load "$SNAKEMAKE_VERSION" || err "Failed to load $SNAKEMAKE_VERSION"
 
 fi
+
+  _exe_in_path snakemake
 
 }
 
@@ -264,11 +265,9 @@ function unlock() {
 
 function _exe_in_path() {
 
-  name_of_exe=$1
-  path_to_exe=$(which $name_of_exe 2>/dev/null)
- if [ ! -x "$path_to_exe" ] ; then
-    err $path_to_exe NOT FOUND!
- fi
+  if ! command -v "$1" > /dev/null 2>&1; then
+    err "Executable '$1' not found in PATH"
+  fi
 
 }
 
@@ -278,7 +277,7 @@ function set_singularity_binds(){
 # this functions tries find what folders to bind
 # "Biowulf specific"
 # assumes that config.yaml and samples.tsv in the WORKDIR are essential
-# files with the most uptodate information
+# files with the most up-to-date information
 # required dos2unix in path
   _exe_in_path dos2unix
   echo "$PIPELINE_HOME" > ${WORKDIR}/tmp1
@@ -456,6 +455,7 @@ cat > ${WORKDIR}/submit_script.sbatch << EOF
 #SBATCH --cpus-per-task=2
 #SBATCH --mail-type=BEGIN,END,FAIL
 
+set -eo pipefail
 module purge
 EOF
 
@@ -463,23 +463,28 @@ if [ "$HOST" == "BIOWULF" ]; then
 
 cat >> ${WORKDIR}/submit_script.sbatch << EOF
 module load $PYTHON_VERSION
-module load $SNAKEMAKE_VERSION
+module load $SNAKEMAKE_VERSION || { echo "ERROR: Failed to load $SNAKEMAKE_VERSION" >&2; exit 1; }
 module load singularity
 EOF
 
 elif [ "$HOST" == "FRCE" ];then
 
 cat >> ${WORKDIR}/submit_script.sbatch << EOF
-export PATH=/mnt/projects/CCBR-Pipelines/bin/:${PATH}
+module load $SNAKEMAKE_VERSION || { echo "ERROR: Failed to load $SNAKEMAKE_VERSION" >&2; exit 1; }
 module load singularity/3.10.5
 EOF
 
 fi
 
 cat >> ${WORKDIR}/submit_script.sbatch << EOF
+if ! command -v snakemake > /dev/null 2>&1; then
+  echo "ERROR: snakemake not found in PATH after loading $SNAKEMAKE_VERSION" >&2
+  exit 1
+fi
+
 cd \$SLURM_SUBMIT_DIR
 
-snakemake -s $SNAKEFILE \\
+if snakemake -s $SNAKEFILE \\
 --directory $WORKDIR \\
 --use-singularity \\
 --singularity-args "$SINGULARITY_BINDS" \\
@@ -508,16 +513,28 @@ cat >> ${WORKDIR}/submit_script.sbatch << EOF
 --rerun-incomplete \\
 --keep-going \\
 --stats ${WORKDIR}/snakemake.stats \\
-2>&1|tee ${WORKDIR}/snakemake.log
+2>&1|tee ${WORKDIR}/snakemake.log; then
+  snakemake_status=0
+else
+  snakemake_status=\$?
+fi
 
-if [ "\$?" -eq "0" ];then
+if [ "\$snakemake_status" -eq "0" ];then
   snakemake -s $SNAKEFILE \\
   --directory $WORKDIR \\
   --report ${WORKDIR}/runslurm_snakemake_report.html \\
-  --configfile ${WORKDIR}/config.yaml
+  --configfile ${WORKDIR}/config.yaml || snakemake_status=\$?
 fi
 
-bash <(curl https://raw.githubusercontent.com/CCBR/Tools/master/Biowulf/gather_cluster_stats.sh 2>/dev/null) ${WORKDIR}/snakemake.log > ${WORKDIR}/snakemake.log.HPC_summary.txt
+if stats_script=\$(curl -fsSL https://raw.githubusercontent.com/CCBR/Tools/34bd72aaaf7e2c4881c4d46fa6e0bd0a11b1a3fd/scripts/gather_cluster_stats.sh); then
+  if [ -z "\$stats_script" ] || ! bash -c "\$stats_script" -- "${WORKDIR}/snakemake.log" > "${WORKDIR}/snakemake.log.HPC_summary.txt"; then
+    echo "WARNING: Failed to generate cluster statistics" >&2
+  fi
+else
+  echo "WARNING: Failed to download cluster statistics helper" >&2
+fi
+
+exit "\$snakemake_status"
 
 EOF
 
@@ -530,6 +547,7 @@ EOF
     mv ${WORKDIR}/dryrun.log ${WORKDIR}/logs/dryrun.log.${modtime}
   fi
 
+snakemake_status=0
 snakemake $1 -s $SNAKEFILE \
 --directory $WORKDIR \
 --use-envmodules \
@@ -541,8 +559,9 @@ snakemake $1 -s $SNAKEFILE \
 -j 500 \
 --rerun-incomplete \
 --keep-going \
---stats ${WORKDIR}/snakemake.stats > ${WORKDIR}/dryrun.log 2>&1
-cat ${WORKDIR}/dryrun.log
+--stats ${WORKDIR}/snakemake.stats > ${WORKDIR}/dryrun.log 2>&1 || snakemake_status=$?
+cat ${WORKDIR}/dryrun.log || return $?
+return "$snakemake_status"
 
   else # for unlock
 
