@@ -15,6 +15,10 @@ and pushed to [dockerhub](https://hub.docker.com/repository/docker/nciccbr/tranq
 
 Pipeline code has been checked out at `/mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL` and is available for all users of FRCE.
 
+The wrapper purges previously loaded modules and loads `snakemake/5.24.1` and
+Singularity itself. Both modules must be available on FRCE, including on the
+Slurm node that runs the submitted job.
+
 ```bash
 /mnt/projects/CCBR-Pipelines/pipelines/TRANQUIL/latest/tranquil
 ```
@@ -122,5 +126,22 @@ Once everything looks ok, the job can be run on the cluster by switching the **m
   - `readstats.txt` tab-delimited file with trimming statistics
 
 - The `results` folder also contains one subfolder for each of the contrasts in the `contrasts.tsv` with the naming convention of "`<group1>_vs_<group2>`". This folder has the mim-tRNAseq outputs.
+
+- Slurm runs write `snakemake.log.HPC_summary.txt` when the cluster statistics
+  helper can be downloaded and executed. A warning is printed if it cannot be
+  generated.
+
+## Wrapper regression tests
+
+Run the module-loading and Slurm wrapper tests without a cluster:
+
+```bash
+bash tests/test_tranquil.sh
+```
+
+The GitHub Actions build also runs these tests and a dry-run with the bundled
+test data using Snakemake 5.24.1. It simulates the FRCE module commands, so it
+does not replace validation on FRCE. Snakemake lint is advisory while the
+existing lint findings remain unresolved.
 
 > Please send any comments/suggestions/requests to [Vishal Koparde](https://github.com/kopardev) via [email](mailto:vishal.koparde@nih.gov).

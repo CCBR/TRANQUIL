@@ -1,5 +1,9 @@
 ## TRANQUIL development version
 
+- Fix Snakemake module loading on FRCE for dry-runs and Slurm jobs. (#28, @kelly-sovacool)
+- Preserve Snakemake failure statuses in dry-runs and Slurm jobs. (#28, @kelly-sovacool)
+- Restore cluster statistics summaries for Slurm runs. (#28, @kelly-sovacool)
+
 ## TRANQUIL 0.3.0
 
 - Run fastq validator before cutadapt to ensure the input fastq files are valid. (#13, @kelly-sovacool)
