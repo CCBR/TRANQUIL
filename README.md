@@ -139,4 +139,9 @@ Run the module-loading and Slurm wrapper tests without a cluster:
 bash tests/test_tranquil.sh
 ```
 
+The GitHub Actions build also runs these tests and a dry-run with the bundled
+test data using Snakemake 5.24.1. It simulates the FRCE module commands, so it
+does not replace validation on FRCE. Snakemake lint is advisory while the
+existing lint findings remain unresolved.
+
 > Please send any comments/suggestions/requests to [Vishal Koparde](https://github.com/kopardev) via [email](mailto:vishal.koparde@nih.gov).

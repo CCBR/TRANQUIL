@@ -1,0 +1,87 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dryrun-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: mamba-org/setup-micromamba@v3
+        with:
+          micromamba-version: "2.8.1-0"
+          environment-name: tranquil-ci
+          cache-environment: true
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+          create-args: >-
+            python=3.7.12
+            snakemake-minimal=5.24.1
+            pandas=1.3.5
+      - name: Initialize and dry-run
+        shell: micromamba-shell {0}
+        run: |
+          set -eo pipefail
+          version="$(snakemake --version)"
+          echo "Snakemake version: $version"
+          test "$version" = "5.24.1"
+          # GitHub runners do not provide FRCE environment modules.
+          module() { :; }
+          export -f module
+          export HOSTNAME=fsitgl-head01p.ncifcrf.gov
+          workdir="$RUNNER_TEMP/tranquil-ci"
+          bash ./tranquil -m=init -w="$workdir"
+          bash ./tranquil -m=dryrun -w="$workdir"
+          if ! grep -q '^rule mimseq:' "$workdir/dryrun.log"; then
+            echo "::error::The dry-run did not include the mimseq rule."
+            exit 1
+          fi
+      - name: Lint (advisory)
+        id: lint
+        continue-on-error: true
+        shell: micromamba-shell {0}
+        run: |
+          snakemake --lint \
+            --snakefile "$GITHUB_WORKSPACE/workflow/Snakefile" \
+            --directory "$RUNNER_TEMP/tranquil-ci" \
+            --configfile "$RUNNER_TEMP/tranquil-ci/config.yaml"
+      - name: Report lint findings
+        if: steps.lint.outcome == 'failure'
+        run: |
+          echo "::warning::Snakemake lint reported findings; see the lint step."
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check shell syntax
+        run: |
+          bash -n tranquil
+          bash -n tests/test_tranquil.sh
+      - name: Test wrapper
+        run: bash tests/test_tranquil.sh
+
+  build-status: # https://github.com/orgs/community/discussions/4324#discussioncomment-3477871
+    runs-on: ubuntu-latest
+    needs: [dryrun-lint, test]
+    if: always()
+    steps:
+      - name: Check build results
+        env:
+          DRYRUN_RESULT: ${{ needs.dryrun-lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          echo "Dry-run and lint: $DRYRUN_RESULT"
+          echo "Wrapper tests: $TEST_RESULT"
+          test "$DRYRUN_RESULT" = success && test "$TEST_RESULT" = success
